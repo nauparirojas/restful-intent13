@@ -1,0 +1,377 @@
+openapi: 3.0.3
+info:
+  title: API RESTful Catálogo - restful-intent13
+  version: 1.0.0
+  description: API RESTful production-ready con DRF, HATEOAS básico, filtrado, paginación,
+    throttling y OpenAPI.
+paths:
+  /api/productos/:
+    get:
+      operationId: productos_list
+      parameters:
+      - in: query
+        name: categoria
+        schema:
+          type: string
+      - in: query
+        name: codigo
+        schema:
+          type: string
+      - in: query
+        name: estado
+        schema:
+          type: string
+          enum:
+          - activo
+          - inactivo
+        description: |-
+          * `activo` - Activo
+          * `inactivo` - Inactivo
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - productos
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductoList'
+          description: ''
+    post:
+      operationId: productos_create
+      tags:
+      - productos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Producto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Producto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Producto'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+          description: ''
+  /api/productos/{id}/:
+    get:
+      operationId: productos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este producto.
+        required: true
+      tags:
+      - productos
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+          description: ''
+    put:
+      operationId: productos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este producto.
+        required: true
+      tags:
+      - productos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Producto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Producto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Producto'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+          description: ''
+    patch:
+      operationId: productos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este producto.
+        required: true
+      tags:
+      - productos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProducto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProducto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProducto'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+          description: ''
+    delete:
+      operationId: productos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este producto.
+        required: true
+      tags:
+      - productos
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/productos/{id}/activar/:
+    post:
+      operationId: productos_activar_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este producto.
+        required: true
+      tags:
+      - productos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Producto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Producto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Producto'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+          description: ''
+  /api/productos/disponibles/:
+    get:
+      operationId: productos_disponibles_retrieve
+      tags:
+      - productos
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+          description: ''
+components:
+  schemas:
+    EstadoEnum:
+      enum:
+      - activo
+      - inactivo
+      type: string
+      description: |-
+        * `activo` - Activo
+        * `inactivo` - Inactivo
+    PaginatedProductoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Producto'
+    PatchedProducto:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 120
+        codigo:
+          type: string
+          maxLength: 40
+        categoria:
+          type: string
+          maxLength: 60
+        precio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        stock:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        disponible:
+          type: boolean
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        _links:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+          title: ' links'
+    Producto:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 120
+        codigo:
+          type: string
+          maxLength: 40
+        categoria:
+          type: string
+          maxLength: 60
+        precio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        stock:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        disponible:
+          type: boolean
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        _links:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+          title: ' links'
+      required:
+      - _links
+      - codigo
+      - creado_en
+      - disponible
+      - id
+      - nombre
+      - precio
+      - url
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
